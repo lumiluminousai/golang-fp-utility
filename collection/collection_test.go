@@ -1043,3 +1043,117 @@ func TestPartition(t *testing.T) {
 		assert.Equal(t, ints, allFalse)
 	})
 }
+
+func TestMaxBy(t *testing.T) {
+	type person struct {
+		Name string
+		Age  int
+	}
+	t.Run("MaxByAge", func(t *testing.T) {
+		people := []person{
+			{"Alice", 30},
+			{"Bob", 25},
+			{"Charlie", 35},
+		}
+
+		oldest, found := MaxBy(people, func(p person) int {
+			return p.Age
+		})
+
+		assert.True(t, found)
+		assert.Equal(t, "Charlie", oldest.Name)
+		assert.Equal(t, 35, oldest.Age)
+	})
+
+	t.Run("MaxByAgeOnePerson", func(t *testing.T) {
+		people := []person{
+			{"Alice", 30},
+		}
+
+		oldest, found := MaxBy(people, func(p person) int {
+			return p.Age
+		})
+
+		assert.True(t, found)
+		assert.Equal(t, "Alice", oldest.Name)
+		assert.Equal(t, 30, oldest.Age)
+	})
+
+	t.Run("MaxByEmptySlice", func(t *testing.T) {
+		people := []person{}
+
+		_, found := MaxBy(people, func(p person) int {
+			return p.Age
+		})
+
+		assert.False(t, found)
+	})
+
+	t.Run("MaxByNegativeValues", func(t *testing.T) {
+		numbers := []int{-10, -5, -20, -1}
+
+		max, found := MaxBy(numbers, func(n int) int {
+			return n
+		})
+
+		assert.True(t, found)
+		assert.Equal(t, -1, max)
+	})
+}
+
+func TestMinBy(t *testing.T) {
+	type person struct {
+		Name string
+		Age  int
+	}
+	t.Run("MinByAge", func(t *testing.T) {
+		people := []person{
+			{"Alice", 30},
+			{"Bob", 25},
+			{"Charlie", 35},
+		}
+
+		youngest, found := MinBy(people, func(p person) int {
+			return p.Age
+		})
+
+		assert.True(t, found)
+		assert.Equal(t, "Bob", youngest.Name)
+		assert.Equal(t, 25, youngest.Age)
+	})
+
+	t.Run("MinByAgeOnePerson", func(t *testing.T) {
+		people := []person{
+			{"Alice", 30},
+		}
+
+		youngest, found := MinBy(people, func(p person) int {
+			return p.Age
+		})
+
+		assert.True(t, found)
+		assert.Equal(t, "Alice", youngest.Name)
+		assert.Equal(t, 30, youngest.Age)
+	})
+
+	t.Run("MinByEmptySlice", func(t *testing.T) {
+		people := []person{}
+
+		_, found := MinBy(people, func(p person) int {
+			return p.Age
+		})
+
+		assert.False(t, found)
+	})
+
+	t.Run("MinByNegativeValues", func(t *testing.T) {
+		numbers := []int{-10, -5, -20, -1}
+
+		min, found := MinBy(numbers, func(n int) int {
+			return n
+		})
+
+		assert.True(t, found)
+		assert.Equal(t, -20, min)
+	})
+}

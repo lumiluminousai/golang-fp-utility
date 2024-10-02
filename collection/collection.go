@@ -208,6 +208,44 @@ func Min[T constraints.Ordered](slice []T) (min T, found bool) {
 	return min, true // Return min and found = true
 }
 
+// MaxBy function finds the maximum element based on a getter function
+func MaxBy[T any, R constraints.Ordered](slice []T, getter func(T) R) (max T, found bool) {
+	if len(slice) == 0 {
+		return max, false // If empty, return default value and found = false
+	}
+
+	max = slice[0]
+	maxValue := getter(slice[0]) // Extract the value from the first element using the getter
+
+	for _, v := range slice[1:] {
+		value := getter(v)
+		if value > maxValue {
+			max = v
+			maxValue = value
+		}
+	}
+	return max, true // Return the element and found = true
+}
+
+// MinBy function finds the minimum element based on a getter function
+func MinBy[T any, R constraints.Ordered](slice []T, getter func(T) R) (min T, found bool) {
+	if len(slice) == 0 {
+		return min, false // If empty, return default value and found = false
+	}
+
+	min = slice[0]
+	minValue := getter(slice[0]) // Extract the value from the first element using the getter
+
+	for _, v := range slice[1:] {
+		value := getter(v)
+		if value < minValue {
+			min = v
+			minValue = value
+		}
+	}
+	return min, true // Return the element and found = true
+}
+
 // Partition function splits a slice into two slices based on a predicate function
 func Partition[T any](slice []T, predicate func(T) bool) ([]T, []T) {
 	trueSlice := []T{}
