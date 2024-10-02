@@ -207,3 +207,19 @@ func Min[T constraints.Ordered](slice []T) (min T, found bool) {
 	}
 	return min, true // Return min and found = true
 }
+
+// Partition function splits a slice into two slices based on a predicate function
+func Partition[T any](slice []T, predicate func(T) bool) ([]T, []T) {
+	trueSlice := []T{}
+	falseSlice := []T{}
+
+	for _, v := range slice {
+		if predicate(v) {
+			trueSlice = append(trueSlice, v)
+		} else {
+			falseSlice = append(falseSlice, v)
+		}
+	}
+
+	return trueSlice, falseSlice
+}
