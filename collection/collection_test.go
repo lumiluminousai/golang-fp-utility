@@ -173,6 +173,35 @@ func TestHigherOrderFunction_Reduce(t *testing.T) {
 		expected := 0
 		assert.Equal(t, expected, result)
 	})
+
+	t.Run("Success_Person", func(t *testing.T) {
+		type person struct {
+			Name string
+			Age  int
+		}
+
+		source := []person{
+			{"Alice", 30},
+			{"Bob", 25},
+			{"Charlie", 35},
+		}
+
+		// reduceFunc to accumulate total age and count persons
+		reduceFunc := func(acc person, p person) person {
+			acc.Age = acc.Age + p.Age
+			return acc
+		}
+
+		initialAccumulator := person{
+			Name: "",
+			Age:  0,
+		}
+		result := Reduce[person](source, reduceFunc, initialAccumulator)
+
+		expected := person{Name: "", Age: 90} // Total age is 90, with 3 persons
+		assert.Equal(t, expected, result)
+	})
+
 }
 
 func TestHigherOrderFunction_FlatMap(t *testing.T) {
