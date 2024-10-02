@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
+	"golang.org/x/exp/constraints"
 )
 
 // Package utility provides utility functions for functional programming in Go.
@@ -175,4 +176,34 @@ func Exists[T any](collection []T, condition func(T) bool) bool {
 		}
 	}
 	return false
+}
+
+// Generic function to find the highest value
+func Max[T constraints.Ordered](slice []T) (max T, found bool) {
+	if len(slice) == 0 {
+		return max, false // If empty, return default value and found = false
+	}
+
+	max = slice[0] // Set the first value as initial max
+	for _, v := range slice[1:] {
+		if v > max {
+			max = v
+		}
+	}
+	return max, true // Return max and found = true
+}
+
+// Generic function to find the lowest value
+func Min[T constraints.Ordered](slice []T) (min T, found bool) {
+	if len(slice) == 0 {
+		return min, false // If empty, return default value and found = false
+	}
+
+	min = slice[0] // Set the first value as initial min
+	for _, v := range slice[1:] {
+		if v < min {
+			min = v
+		}
+	}
+	return min, true // Return min and found = true
 }
