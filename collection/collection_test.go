@@ -1186,3 +1186,80 @@ func TestMinBy(t *testing.T) {
 		assert.Equal(t, -20, min)
 	})
 }
+
+func TestCount(t *testing.T) {
+	t.Run("CountEvenNumbers", func(t *testing.T) {
+		// Given a slice of numbers
+		numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+
+		// When counting even numbers
+		evenCount := Count(numbers, func(n int) bool {
+			return n%2 == 0
+		})
+
+		// Then the count should be 5
+		assert.Equal(t, 5, evenCount)
+	})
+
+	t.Run("CountOddNumbers", func(t *testing.T) {
+		// Given a slice of numbers
+		numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+
+		// When counting odd numbers
+		oddCount := Count(numbers, func(n int) bool {
+			return n%2 != 0
+		})
+
+		// Then the count should be 5
+		assert.Equal(t, 5, oddCount)
+	})
+
+	t.Run("CountStringsWithLengthGreaterThan3", func(t *testing.T) {
+		// Given a slice of strings
+		strings := []string{"Go", "is", "awesome", "I", "love", "coding"}
+
+		// When counting strings with length greater than 3
+		longStringCount := Count(strings, func(s string) bool {
+			return len(s) > 3
+		})
+
+		// Then the count should be 3
+		assert.Equal(t, 3, longStringCount)
+	})
+
+	t.Run("CountEmptySlice", func(t *testing.T) {
+		// Given an empty slice of integers
+		empty := []int{}
+
+		// When counting elements in an empty slice
+		count := Count(empty, func(n int) bool {
+			return n > 0
+		})
+
+		// Then the count should be 0
+		assert.Equal(t, 0, count)
+	})
+
+	t.Run("CountPeopleOlderThan30", func(t *testing.T) {
+		// Given a slice of Person structs
+		type Person struct {
+			Name string
+			Age  int
+		}
+
+		people := []Person{
+			{"Alice", 30},
+			{"Bob", 25},
+			{"Charlie", 35},
+			{"Dave", 40},
+		}
+
+		// When counting people older than 30
+		olderThan30Count := Count(people, func(p Person) bool {
+			return p.Age > 30
+		})
+
+		// Then the count should be 2
+		assert.Equal(t, 2, olderThan30Count)
+	})
+}

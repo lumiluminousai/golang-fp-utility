@@ -261,3 +261,14 @@ func Partition[T any](slice []T, predicate func(T) bool) ([]T, []T) {
 
 	return trueSlice, falseSlice
 }
+
+// Count function: Counts elements in a slice based on a predicate function
+func Count[T any](slice []T, predicate func(T) bool) int {
+	count := 0
+	for _, v := range slice {
+		if predicate(v) {
+			count++
+		}
+	}
+	return count
+}
