@@ -986,3 +986,60 @@ func TestMinFloat(t *testing.T) {
 		}
 	}
 }
+
+func TestPartition(t *testing.T) {
+	// Test cases for Partition
+	t.Run("PartitionEvenOdd", func(t *testing.T) {
+		ints := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+		evens, odds := Partition(ints, func(v int) bool {
+			return v%2 == 0
+		})
+		expectedEvens := []int{2, 4, 6, 8, 10}
+		expectedOdds := []int{1, 3, 5, 7, 9}
+
+		assert.Equal(t, expectedEvens, evens)
+		assert.Equal(t, expectedOdds, odds)
+	})
+
+	t.Run("PartitionStringsByLength", func(t *testing.T) {
+		strings := []string{"Go", "is", "awesome", "!", "I", "love", "coding"}
+		longWords, shortWords := Partition(strings, func(v string) bool {
+			return len(v) > 2
+		})
+		expectedLong := []string{"awesome", "love", "coding"}
+		expectedShort := []string{"Go", "is", "!", "I"}
+
+		assert.Equal(t, expectedLong, longWords)
+		assert.Equal(t, expectedShort, shortWords)
+	})
+
+	t.Run("PartitionEmptySlice", func(t *testing.T) {
+		empty := []int{}
+		trues, falses := Partition(empty, func(v int) bool {
+			return v > 0
+		})
+
+		assert.Equal(t, []int{}, trues)
+		assert.Equal(t, []int{}, falses)
+	})
+
+	t.Run("PartitionAllTrue", func(t *testing.T) {
+		ints := []int{1, 2, 3, 4, 5}
+		allTrue, noneFalse := Partition(ints, func(v int) bool {
+			return true
+		})
+
+		assert.Equal(t, ints, allTrue)
+		assert.Equal(t, []int{}, noneFalse)
+	})
+
+	t.Run("PartitionAllFalse", func(t *testing.T) {
+		ints := []int{1, 2, 3, 4, 5}
+		noneTrue, allFalse := Partition(ints, func(v int) bool {
+			return false
+		})
+
+		assert.Equal(t, []int{}, noneTrue)
+		assert.Equal(t, ints, allFalse)
+	})
+}
