@@ -891,3 +891,98 @@ func TestExists(t *testing.T) {
 		})
 	}
 }
+
+// Test for Max function
+func TestMax(t *testing.T) {
+	tests := []struct {
+		input    []int
+		expected int
+		found    bool
+	}{
+		{[]int{1, 2, 3, 4, 5}, 5, true},    // Typical case
+		{[]int{-10, -3, -6, -1}, -1, true}, // Negative numbers
+		{[]int{5}, 5, true},                // Single element
+		{[]int{}, 0, false},                // Empty slice
+	}
+
+	for _, test := range tests {
+		result, found := Max(test.input)
+		if result != test.expected || found != test.found {
+			t.Errorf("Max(%v) = (%v, %v); expected (%v, %v)",
+				test.input, result, found, test.expected, test.found)
+		}
+	}
+}
+
+// Test for Min function
+func TestMin(t *testing.T) {
+	tests := []struct {
+		input    []int
+		expected int
+		found    bool
+	}{
+		{[]int{1, 2, 3, 4, 5}, 1, true},        // Typical case
+		{[]int{-10, -3, -6, -1}, -10, true},    // Negative numbers
+		{[]int{5}, 5, true},                    // Single element
+		{[]int{}, 0, false},                    // Empty slice
+		{[]int{5, 3, 7, 1, 8}, 1, true},        // Min value at the end
+		{[]int{1, 5, 3, 7, 8}, 1, true},        // Min value at the beginning
+		{[]int{5, 3, 1, 7, 8}, 1, true},        // Min value in the middle
+		{[]int{5, 3, 1, 7, 1}, 1, true},        // Multiple occurrences of the min value
+		{[]int{1, 1, 1, 1}, 1, true},           // All values are the same
+		{[]int{100, 90, 80, 70, 60}, 60, true}, // Descending order
+		{[]int{60, 70, 80, 90, 100}, 60, true}, // Ascending order
+	}
+
+	for _, test := range tests {
+		result, found := Min(test.input)
+		if result != test.expected || found != test.found {
+			t.Errorf("Min(%v) = (%v, %v); expected (%v, %v)",
+				test.input, result, found, test.expected, test.found)
+		}
+	}
+}
+
+// Test with float64 for Max function
+func TestMaxFloat(t *testing.T) {
+	tests := []struct {
+		input    []float64
+		expected float64
+		found    bool
+	}{
+		{[]float64{1.1, 2.2, 3.3, 4.4}, 4.4, true}, // Typical case
+		{[]float64{-10.1, -3.5, -6.7}, -3.5, true}, // Negative floats
+		{[]float64{5.5}, 5.5, true},                // Single element
+		{[]float64{}, 0, false},                    // Empty slice
+	}
+
+	for _, test := range tests {
+		result, found := Max(test.input)
+		if result != test.expected || found != test.found {
+			t.Errorf("Max(%v) = (%v, %v); expected (%v, %v)",
+				test.input, result, found, test.expected, test.found)
+		}
+	}
+}
+
+// Test with float64 for Min function
+func TestMinFloat(t *testing.T) {
+	tests := []struct {
+		input    []float64
+		expected float64
+		found    bool
+	}{
+		{[]float64{1.1, 2.2, 3.3, 4.4}, 1.1, true},  // Typical case
+		{[]float64{-10.1, -3.5, -6.7}, -10.1, true}, // Negative floats
+		{[]float64{5.5}, 5.5, true},                 // Single element
+		{[]float64{}, 0, false},                     // Empty slice
+	}
+
+	for _, test := range tests {
+		result, found := Min(test.input)
+		if result != test.expected || found != test.found {
+			t.Errorf("Min(%v) = (%v, %v); expected (%v, %v)",
+				test.input, result, found, test.expected, test.found)
+		}
+	}
+}
