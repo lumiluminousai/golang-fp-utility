@@ -272,3 +272,12 @@ func Count[T any](slice []T, predicate func(T) bool) int {
 	}
 	return count
 }
+
+// Curry takes a function fn with two parameters and returns a curried version of it.
+func Curry[T1, T2, R any](fn func(T1, T2) R) func(T1) func(T2) R {
+	return func(t1 T1) func(T2) R {
+		return func(t2 T2) R {
+			return fn(t1, t2)
+		}
+	}
+}

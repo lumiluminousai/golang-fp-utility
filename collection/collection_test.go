@@ -1263,3 +1263,121 @@ func TestCount(t *testing.T) {
 		assert.Equal(t, 2, olderThan30Count)
 	})
 }
+
+func TestCurry(t *testing.T) {
+	// Test with an addition function
+	t.Run("IntegerAddition", func(t *testing.T) {
+		add := func(a, b int) int {
+			return a + b
+		}
+		curriedAdd := Curry(add)
+
+		add5 := curriedAdd(5)
+
+		result := add5(3)
+		expected := 8
+
+		if result != expected {
+			t.Errorf("curriedAdd(5)(3) = %d; want %d", result, expected)
+		}
+	})
+
+	// Test with a string concatenation function
+	t.Run("StringConcatenation", func(t *testing.T) {
+		concat := func(a, b string) string {
+			return a + b
+		}
+		curriedConcat := Curry(concat)
+
+		helloConcat := curriedConcat("Hello, ")
+
+		resultStr := helloConcat("World!")
+		expectedStr := "Hello, World!"
+
+		if resultStr != expectedStr {
+			t.Errorf(`curriedConcat("Hello, ")("World!") = %s; want %s`, resultStr, expectedStr)
+		}
+	})
+
+	// Test with a multiplication function
+	t.Run("FloatMultiplication", func(t *testing.T) {
+		multiply := func(a, b float64) float64 {
+			return a * b
+		}
+		curriedMultiply := Curry(multiply)
+
+		multiplyBy10 := curriedMultiply(10)
+
+		resultMul := multiplyBy10(3.5)
+		expectedMul := 35.0
+
+		if resultMul != expectedMul {
+			t.Errorf("curriedMultiply(10)(3.5) = %f; want %f", resultMul, expectedMul)
+		}
+	})
+
+	// Multiple curried functions test case
+	t.Run("MultipleCurriedFunctions", func(t *testing.T) {
+		// First curried function: addition
+		add := func(a, b int) int {
+			return a + b
+		}
+		curriedAdd := Curry(add)
+
+		// Second curried function: multiplication
+		multiply := func(a, b int) int {
+			return a * b
+		}
+		curriedMultiply := Curry(multiply)
+
+		// Apply the curried addition and multiplication
+		add5 := curriedAdd(5)
+		multiplyBy2 := curriedMultiply(2)
+
+		// Combine them by adding first, then multiplying the result
+		result := multiplyBy2(add5(3)) // (5 + 3) * 2 = 16
+		expected := 16
+
+		if result != expected {
+			t.Errorf("multiplyBy2(add5(3)) = %d; want %d", result, expected)
+		}
+
+		// Another case, add 7, then multiply by 4
+		add7 := curriedAdd(7)
+		multiplyBy4 := curriedMultiply(4)
+
+		result2 := multiplyBy4(add7(2)) // (7 + 2) * 4 = 36
+		expected2 := 36
+
+		if result2 != expected2 {
+			t.Errorf("multiplyBy4(add7(2)) = %d; want %d", result2, expected2)
+		}
+	})
+
+	// Additional test case for chaining curried functions with different types
+	t.Run("ChainingDifferentTypes", func(t *testing.T) {
+		// Curried string concatenation function
+		concat := func(a, b string) string {
+			return a + b
+		}
+		curriedConcat := Curry(concat)
+
+		// Curried string length function
+		stringLength := func(a string, b string) int {
+			return len(a + b)
+		}
+		curriedStringLength := Curry(stringLength)
+
+		// Chain the functions: concatenate first, then get the length
+		helloConcat := curriedConcat("Hello, ")
+		length := curriedStringLength(helloConcat("World!"))
+
+		resultLength := length("!")
+		expectedLength := 14 // "Hello, World!!" has 14 characters
+
+		if resultLength != expectedLength {
+			t.Errorf(`curriedStringLength(helloConcat("World!"))("!") = %d; want %d`, resultLength, expectedLength)
+		}
+	})
+
+}
