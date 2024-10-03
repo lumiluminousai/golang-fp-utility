@@ -288,3 +288,10 @@ func Compose[T1 any, T2 any, T3 any](f func(T2) T3, g func(T1) T2) func(T1) T3 {
 		return f(g(x))
 	}
 }
+
+// Pipe takes two functions, g and f, and returns a new function that applies g first and then f.
+func Pipe[T1 any, T2 any, T3 any](g func(T1) T2, f func(T2) T3) func(T1) T3 {
+	return func(x T1) T3 {
+		return f(g(x))
+	}
+}

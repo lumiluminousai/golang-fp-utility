@@ -1462,3 +1462,84 @@ func TestCompose(t *testing.T) {
 		})
 	})
 }
+
+func TestPipe(t *testing.T) {
+	// Integer functions for piping
+	add3 := func(x int) int {
+		return x + 3
+	}
+
+	multiplyBy2 := func(x int) int {
+		return x * 2
+	}
+
+	// String functions for piping
+	lower := func(s string) string {
+		return strings.ToLower(s)
+	}
+
+	trimSpace := func(s string) string {
+		return strings.TrimSpace(s)
+	}
+
+	// Run sub-tests
+	t.Run("IntegerPipe", func(t *testing.T) {
+		piped := Pipe(add3, multiplyBy2)
+
+		t.Run("TestWith5", func(t *testing.T) {
+			result := piped(5)
+			expected := 16 // (5 + 3) * 2 = 16
+			if result != expected {
+				t.Errorf("piped(5) = %d; want %d", result, expected)
+			}
+		})
+
+		t.Run("TestWith7", func(t *testing.T) {
+			result := piped(7)
+			expected := 20 // (7 + 3) * 2 = 20
+			if result != expected {
+				t.Errorf("piped(7) = %d; want %d", result, expected)
+			}
+		})
+	})
+
+	t.Run("StringPipe", func(t *testing.T) {
+		pipedString := Pipe(trimSpace, lower)
+
+		t.Run("TestWithSpace", func(t *testing.T) {
+			resultStr := pipedString("  HELLO  ")
+			expectedStr := "hello"
+			if resultStr != expectedStr {
+				t.Errorf(`pipedString("  HELLO  ") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+
+		t.Run("TestWithNoSpace", func(t *testing.T) {
+			resultStr := pipedString("WORLD")
+			expectedStr := "world"
+			if resultStr != expectedStr {
+				t.Errorf(`pipedString("WORLD") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+	})
+
+	t.Run("EdgeCases", func(t *testing.T) {
+		t.Run("EmptyString", func(t *testing.T) {
+			pipedString := Pipe(trimSpace, lower)
+			resultStr := pipedString("")
+			expectedStr := ""
+			if resultStr != expectedStr {
+				t.Errorf(`pipedString("") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+
+		t.Run("NegativeNumber", func(t *testing.T) {
+			piped := Pipe(add3, multiplyBy2)
+			result := piped(-3) // (-3 + 3) * 2 = 0
+			expected := 0
+			if result != expected {
+				t.Errorf("piped(-3) = %d; want %d", result, expected)
+			}
+		})
+	})
+}
