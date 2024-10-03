@@ -1381,3 +1381,84 @@ func TestCurry(t *testing.T) {
 	})
 
 }
+
+func TestCompose(t *testing.T) {
+	// Integer functions for composition
+	multiplyBy2 := func(x int) int {
+		return x * 2
+	}
+
+	add3 := func(x int) int {
+		return x + 3
+	}
+
+	// String functions for composition
+	upper := func(s string) string {
+		return strings.ToUpper(s)
+	}
+
+	addExclamation := func(s string) string {
+		return s + "!"
+	}
+
+	// Run sub-tests
+	t.Run("IntegerCompose", func(t *testing.T) {
+		composed := Compose(multiplyBy2, add3)
+
+		t.Run("TestWith5", func(t *testing.T) {
+			result := composed(5)
+			expected := 16 // (5 + 3) * 2 = 16
+			if result != expected {
+				t.Errorf("composed(5) = %d; want %d", result, expected)
+			}
+		})
+
+		t.Run("TestWith7", func(t *testing.T) {
+			result := composed(7)
+			expected := 20 // (7 + 3) * 2 = 20
+			if result != expected {
+				t.Errorf("composed(7) = %d; want %d", result, expected)
+			}
+		})
+	})
+
+	t.Run("StringCompose", func(t *testing.T) {
+		composedString := Compose(addExclamation, upper)
+
+		t.Run("TestWithHello", func(t *testing.T) {
+			resultStr := composedString("hello")
+			expectedStr := "HELLO!"
+			if resultStr != expectedStr {
+				t.Errorf(`composedString("hello") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+
+		t.Run("TestWithGo", func(t *testing.T) {
+			resultStr := composedString("go")
+			expectedStr := "GO!"
+			if resultStr != expectedStr {
+				t.Errorf(`composedString("go") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+	})
+
+	t.Run("EdgeCases", func(t *testing.T) {
+		t.Run("EmptyString", func(t *testing.T) {
+			composedString := Compose(addExclamation, upper)
+			resultStr := composedString("")
+			expectedStr := "!"
+			if resultStr != expectedStr {
+				t.Errorf(`composedString("") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+
+		t.Run("NegativeNumber", func(t *testing.T) {
+			composed := Compose(multiplyBy2, add3)
+			result := composed(-3) // (-3 + 3) * 2 = 0
+			expected := 0
+			if result != expected {
+				t.Errorf("composed(-3) = %d; want %d", result, expected)
+			}
+		})
+	})
+}

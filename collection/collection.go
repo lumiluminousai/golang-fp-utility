@@ -281,3 +281,10 @@ func Curry[T1, T2, R any](fn func(T1, T2) R) func(T1) func(T2) R {
 		}
 	}
 }
+
+// Compose takes two functions f and g, and returns a new function that applies g first and then f.
+func Compose[T1 any, T2 any, T3 any](f func(T2) T3, g func(T1) T2) func(T1) T3 {
+	return func(x T1) T3 {
+		return f(g(x))
+	}
+}
