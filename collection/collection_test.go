@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -1261,5 +1262,418 @@ func TestCount(t *testing.T) {
 
 		// Then the count should be 2
 		assert.Equal(t, 2, olderThan30Count)
+	})
+}
+
+func TestCurry(t *testing.T) {
+	// Test with an addition function
+	t.Run("IntegerAddition", func(t *testing.T) {
+		add := func(a, b int) int {
+			return a + b
+		}
+		curriedAdd := Curry(add)
+
+		add5 := curriedAdd(5)
+
+		result := add5(3)
+		expected := 8
+
+		if result != expected {
+			t.Errorf("curriedAdd(5)(3) = %d; want %d", result, expected)
+		}
+	})
+
+	// Test with a string concatenation function
+	t.Run("StringConcatenation", func(t *testing.T) {
+		concat := func(a, b string) string {
+			return a + b
+		}
+		curriedConcat := Curry(concat)
+
+		helloConcat := curriedConcat("Hello, ")
+
+		resultStr := helloConcat("World!")
+		expectedStr := "Hello, World!"
+
+		if resultStr != expectedStr {
+			t.Errorf(`curriedConcat("Hello, ")("World!") = %s; want %s`, resultStr, expectedStr)
+		}
+	})
+
+	// Test with a multiplication function
+	t.Run("FloatMultiplication", func(t *testing.T) {
+		multiply := func(a, b float64) float64 {
+			return a * b
+		}
+		curriedMultiply := Curry(multiply)
+
+		multiplyBy10 := curriedMultiply(10)
+
+		resultMul := multiplyBy10(3.5)
+		expectedMul := 35.0
+
+		if resultMul != expectedMul {
+			t.Errorf("curriedMultiply(10)(3.5) = %f; want %f", resultMul, expectedMul)
+		}
+	})
+
+	// Multiple curried functions test case
+	t.Run("MultipleCurriedFunctions", func(t *testing.T) {
+		// First curried function: addition
+		add := func(a, b int) int {
+			return a + b
+		}
+		curriedAdd := Curry(add)
+
+		// Second curried function: multiplication
+		multiply := func(a, b int) int {
+			return a * b
+		}
+		curriedMultiply := Curry(multiply)
+
+		// Apply the curried addition and multiplication
+		add5 := curriedAdd(5)
+		multiplyBy2 := curriedMultiply(2)
+
+		// Combine them by adding first, then multiplying the result
+		result := multiplyBy2(add5(3)) // (5 + 3) * 2 = 16
+		expected := 16
+
+		if result != expected {
+			t.Errorf("multiplyBy2(add5(3)) = %d; want %d", result, expected)
+		}
+
+		// Another case, add 7, then multiply by 4
+		add7 := curriedAdd(7)
+		multiplyBy4 := curriedMultiply(4)
+
+		result2 := multiplyBy4(add7(2)) // (7 + 2) * 4 = 36
+		expected2 := 36
+
+		if result2 != expected2 {
+			t.Errorf("multiplyBy4(add7(2)) = %d; want %d", result2, expected2)
+		}
+	})
+
+	// Additional test case for chaining curried functions with different types
+	t.Run("ChainingDifferentTypes", func(t *testing.T) {
+		// Curried string concatenation function
+		concat := func(a, b string) string {
+			return a + b
+		}
+		curriedConcat := Curry(concat)
+
+		// Curried string length function
+		stringLength := func(a string, b string) int {
+			return len(a + b)
+		}
+		curriedStringLength := Curry(stringLength)
+
+		// Chain the functions: concatenate first, then get the length
+		helloConcat := curriedConcat("Hello, ")
+		length := curriedStringLength(helloConcat("World!"))
+
+		resultLength := length("!")
+		expectedLength := 14 // "Hello, World!!" has 14 characters
+
+		if resultLength != expectedLength {
+			t.Errorf(`curriedStringLength(helloConcat("World!"))("!") = %d; want %d`, resultLength, expectedLength)
+		}
+	})
+
+}
+
+func TestCompose(t *testing.T) {
+	// Integer functions for composition
+	multiplyBy2 := func(x int) int {
+		return x * 2
+	}
+
+	add3 := func(x int) int {
+		return x + 3
+	}
+
+	// String functions for composition
+	upper := func(s string) string {
+		return strings.ToUpper(s)
+	}
+
+	addExclamation := func(s string) string {
+		return s + "!"
+	}
+
+	// Run sub-tests
+	t.Run("IntegerCompose", func(t *testing.T) {
+		composed := Compose(multiplyBy2, add3)
+
+		t.Run("TestWith5", func(t *testing.T) {
+			result := composed(5)
+			expected := 16 // (5 + 3) * 2 = 16
+			if result != expected {
+				t.Errorf("composed(5) = %d; want %d", result, expected)
+			}
+		})
+
+		t.Run("TestWith7", func(t *testing.T) {
+			result := composed(7)
+			expected := 20 // (7 + 3) * 2 = 20
+			if result != expected {
+				t.Errorf("composed(7) = %d; want %d", result, expected)
+			}
+		})
+	})
+
+	t.Run("StringCompose", func(t *testing.T) {
+		composedString := Compose(addExclamation, upper)
+
+		t.Run("TestWithHello", func(t *testing.T) {
+			resultStr := composedString("hello")
+			expectedStr := "HELLO!"
+			if resultStr != expectedStr {
+				t.Errorf(`composedString("hello") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+
+		t.Run("TestWithGo", func(t *testing.T) {
+			resultStr := composedString("go")
+			expectedStr := "GO!"
+			if resultStr != expectedStr {
+				t.Errorf(`composedString("go") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+	})
+
+	t.Run("EdgeCases", func(t *testing.T) {
+		t.Run("EmptyString", func(t *testing.T) {
+			composedString := Compose(addExclamation, upper)
+			resultStr := composedString("")
+			expectedStr := "!"
+			if resultStr != expectedStr {
+				t.Errorf(`composedString("") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+
+		t.Run("NegativeNumber", func(t *testing.T) {
+			composed := Compose(multiplyBy2, add3)
+			result := composed(-3) // (-3 + 3) * 2 = 0
+			expected := 0
+			if result != expected {
+				t.Errorf("composed(-3) = %d; want %d", result, expected)
+			}
+		})
+	})
+}
+
+// TestCompose2: Bool from String from Int
+func TestCompose2(t *testing.T) {
+	// Function 1: Convert int to string
+	intToString := func(n int) string {
+		return strconv.Itoa(n)
+	}
+
+	// Function 2: Convert string to boolean (true if string length is even)
+	isEvenLength := func(s string) bool {
+		return len(s)%2 == 0
+	}
+
+	// Compose intToString and isEvenLength together
+	composed := Compose(isEvenLength, intToString)
+
+	t.Run("TestWith42", func(t *testing.T) {
+		result := composed(42) // "42" is a string of length 2, which is even, so should return true
+		expected := true
+		if result != expected {
+			t.Errorf("composed(42) = %v; want %v", result, expected)
+		}
+	})
+
+	t.Run("TestWith333", func(t *testing.T) {
+		result := composed(333) // "333" is a string of length 3, which is odd, so should return false
+		expected := false
+		if result != expected {
+			t.Errorf("composed(333) = %v; want %v", result, expected)
+		}
+	})
+
+	t.Run("TestWithNegativeNumber", func(t *testing.T) {
+		result := composed(-12) // "-12" is a string of length 3, which is odd, so should return false
+		expected := false
+		if result != expected {
+			t.Errorf("composed(-12) = %v; want %v", result, expected)
+		}
+	})
+}
+
+func TestPipe(t *testing.T) {
+	// Integer functions for piping
+	add3 := func(x int) int {
+		return x + 3
+	}
+
+	multiplyBy2 := func(x int) int {
+		return x * 2
+	}
+
+	// String functions for piping
+	lower := func(s string) string {
+		return strings.ToLower(s)
+	}
+
+	trimSpace := func(s string) string {
+		return strings.TrimSpace(s)
+	}
+
+	// Run sub-tests
+	t.Run("IntegerPipe", func(t *testing.T) {
+		piped := Pipe(add3, multiplyBy2)
+
+		t.Run("TestWith5", func(t *testing.T) {
+			result := piped(5)
+			expected := 16 // (5 + 3) * 2 = 16
+			if result != expected {
+				t.Errorf("piped(5) = %d; want %d", result, expected)
+			}
+		})
+
+		t.Run("TestWith7", func(t *testing.T) {
+			result := piped(7)
+			expected := 20 // (7 + 3) * 2 = 20
+			if result != expected {
+				t.Errorf("piped(7) = %d; want %d", result, expected)
+			}
+		})
+	})
+
+	t.Run("StringPipe", func(t *testing.T) {
+		pipedString := Pipe(trimSpace, lower)
+
+		t.Run("TestWithSpace", func(t *testing.T) {
+			resultStr := pipedString("  HELLO  ")
+			expectedStr := "hello"
+			if resultStr != expectedStr {
+				t.Errorf(`pipedString("  HELLO  ") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+
+		t.Run("TestWithNoSpace", func(t *testing.T) {
+			resultStr := pipedString("WORLD")
+			expectedStr := "world"
+			if resultStr != expectedStr {
+				t.Errorf(`pipedString("WORLD") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+	})
+
+	t.Run("EdgeCases", func(t *testing.T) {
+		t.Run("EmptyString", func(t *testing.T) {
+			pipedString := Pipe(trimSpace, lower)
+			resultStr := pipedString("")
+			expectedStr := ""
+			if resultStr != expectedStr {
+				t.Errorf(`pipedString("") = %s; want %s`, resultStr, expectedStr)
+			}
+		})
+
+		t.Run("NegativeNumber", func(t *testing.T) {
+			piped := Pipe(add3, multiplyBy2)
+			result := piped(-3) // (-3 + 3) * 2 = 0
+			expected := 0
+			if result != expected {
+				t.Errorf("piped(-3) = %d; want %d", result, expected)
+			}
+		})
+	})
+}
+
+// TestPipe2: String to Int to Boolean
+func TestPipe2(t *testing.T) {
+	// Function 1: Convert string to int
+	stringToInt := func(s string) int {
+		result, err := strconv.Atoi(s)
+		if err != nil {
+			return 0 // Return 0 if conversion fails
+		}
+		return result
+	}
+
+	// Function 2: Check if the integer is even
+	isEven := func(n int) bool {
+		return n%2 == 0
+	}
+
+	// Pipe stringToInt and isEven together
+	piped := Pipe(stringToInt, isEven)
+
+	t.Run("TestWithEvenString", func(t *testing.T) {
+		result := piped("42") // "42" should convert to 42, which is even
+		expected := true
+		if result != expected {
+			t.Errorf(`piped("42") = %v; want %v`, result, expected)
+		}
+	})
+
+	t.Run("TestWithOddString", func(t *testing.T) {
+		result := piped("33") // "33" should convert to 33, which is odd
+		expected := false
+		if result != expected {
+			t.Errorf(`piped("33") = %v; want %v`, result, expected)
+		}
+	})
+
+	t.Run("TestWithInvalidString", func(t *testing.T) {
+		result := piped("abc") // "abc" can't convert to an integer, should return 0, which is even
+		expected := true
+		if result != expected {
+			t.Errorf(`piped("abc") = %v; want %v`, result, expected)
+		}
+	})
+}
+
+func TestChain(t *testing.T) {
+	// Example 1: Chaining integer functions
+	increment := func(x int) int { return x + 1 }
+	double := func(x int) int { return x * 2 }
+	subtractTwo := func(x int) int { return x - 2 }
+
+	t.Run("TestIntegerChain", func(t *testing.T) {
+		result := Chain(3, increment, double, subtractTwo)
+		expected := 6 // (((3 + 1) * 2) - 2) = 6
+		if result != expected {
+			t.Errorf("Chain(3, increment, double, subtractTwo) = %d; want %d", result, expected)
+		}
+	})
+
+	// Example 2: Chaining string functions
+	toUpper := func(s string) string { return strings.ToUpper(s) }
+	addExclamation := func(s string) string { return s + "!" }
+	trimSpace := func(s string) string { return strings.TrimSpace(s) }
+
+	t.Run("TestStringChain", func(t *testing.T) {
+		result := Chain(" hello ", trimSpace, toUpper, addExclamation)
+		expected := "HELLO!"
+		if result != expected {
+			t.Errorf(`Chain(" hello ", trimSpace, toUpper, addExclamation) = %s; want %s`, result, expected)
+		}
+	})
+
+	// Example 3: Chaining float functions
+	multiplyBy3 := func(x float64) float64 { return x * 3 }
+	addTen := func(x float64) float64 { return x + 10 }
+
+	t.Run("TestFloatChain", func(t *testing.T) {
+		result := Chain(2.5, multiplyBy3, addTen)
+		expected := 17.5 // (2.5 * 3) + 10 = 17.5
+		if result != expected {
+			t.Errorf("Chain(2.5, multiplyBy3, addTen) = %f; want %f", result, expected)
+		}
+	})
+
+	// Example 4: Chaining with no functions (should return input as-is)
+	t.Run("TestEmptyChain", func(t *testing.T) {
+		result := Chain(10)
+		expected := 10
+		if result != expected {
+			t.Errorf("Chain(10) = %d; want %d", result, expected)
+		}
 	})
 }

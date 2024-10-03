@@ -272,3 +272,35 @@ func Count[T any](slice []T, predicate func(T) bool) int {
 	}
 	return count
 }
+
+// Curry takes a function fn with two parameters and returns a curried version of it.
+func Curry[T1, T2, R any](fn func(T1, T2) R) func(T1) func(T2) R {
+	return func(t1 T1) func(T2) R {
+		return func(t2 T2) R {
+			return fn(t1, t2)
+		}
+	}
+}
+
+// Compose takes two functions f and g, and returns a new function that applies g first and then f.
+func Compose[T1 any, T2 any, T3 any](f func(T2) T3, g func(T1) T2) func(T1) T3 {
+	return func(x T1) T3 {
+		return f(g(x))
+	}
+}
+
+// Pipe takes two functions, g and f, and returns a new function that applies g first and then f.
+func Pipe[T1 any, T2 any, T3 any](g func(T1) T2, f func(T2) T3) func(T1) T3 {
+	return func(x T1) T3 {
+		return f(g(x))
+	}
+}
+
+// Chain applies a series of functions to a value in sequence.
+// Each function must take a value of type T and return a value of type T.
+func Chain[T any](value T, functions ...func(T) T) T {
+	for _, fn := range functions {
+		value = fn(value)
+	}
+	return value
+}
