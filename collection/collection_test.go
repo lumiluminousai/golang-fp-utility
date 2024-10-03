@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -1463,6 +1464,46 @@ func TestCompose(t *testing.T) {
 	})
 }
 
+// TestCompose2: Bool from String from Int
+func TestCompose2(t *testing.T) {
+	// Function 1: Convert int to string
+	intToString := func(n int) string {
+		return strconv.Itoa(n)
+	}
+
+	// Function 2: Convert string to boolean (true if string length is even)
+	isEvenLength := func(s string) bool {
+		return len(s)%2 == 0
+	}
+
+	// Compose intToString and isEvenLength together
+	composed := Compose(isEvenLength, intToString)
+
+	t.Run("TestWith42", func(t *testing.T) {
+		result := composed(42) // "42" is a string of length 2, which is even, so should return true
+		expected := true
+		if result != expected {
+			t.Errorf("composed(42) = %v; want %v", result, expected)
+		}
+	})
+
+	t.Run("TestWith333", func(t *testing.T) {
+		result := composed(333) // "333" is a string of length 3, which is odd, so should return false
+		expected := false
+		if result != expected {
+			t.Errorf("composed(333) = %v; want %v", result, expected)
+		}
+	})
+
+	t.Run("TestWithNegativeNumber", func(t *testing.T) {
+		result := composed(-12) // "-12" is a string of length 3, which is odd, so should return false
+		expected := false
+		if result != expected {
+			t.Errorf("composed(-12) = %v; want %v", result, expected)
+		}
+	})
+}
+
 func TestPipe(t *testing.T) {
 	// Integer functions for piping
 	add3 := func(x int) int {
@@ -1541,5 +1582,49 @@ func TestPipe(t *testing.T) {
 				t.Errorf("piped(-3) = %d; want %d", result, expected)
 			}
 		})
+	})
+}
+
+// TestPipe2: String to Int to Boolean
+func TestPipe2(t *testing.T) {
+	// Function 1: Convert string to int
+	stringToInt := func(s string) int {
+		result, err := strconv.Atoi(s)
+		if err != nil {
+			return 0 // Return 0 if conversion fails
+		}
+		return result
+	}
+
+	// Function 2: Check if the integer is even
+	isEven := func(n int) bool {
+		return n%2 == 0
+	}
+
+	// Pipe stringToInt and isEven together
+	piped := Pipe(stringToInt, isEven)
+
+	t.Run("TestWithEvenString", func(t *testing.T) {
+		result := piped("42") // "42" should convert to 42, which is even
+		expected := true
+		if result != expected {
+			t.Errorf(`piped("42") = %v; want %v`, result, expected)
+		}
+	})
+
+	t.Run("TestWithOddString", func(t *testing.T) {
+		result := piped("33") // "33" should convert to 33, which is odd
+		expected := false
+		if result != expected {
+			t.Errorf(`piped("33") = %v; want %v`, result, expected)
+		}
+	})
+
+	t.Run("TestWithInvalidString", func(t *testing.T) {
+		result := piped("abc") // "abc" can't convert to an integer, should return 0, which is even
+		expected := true
+		if result != expected {
+			t.Errorf(`piped("abc") = %v; want %v`, result, expected)
+		}
 	})
 }
