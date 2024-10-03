@@ -295,3 +295,12 @@ func Pipe[T1 any, T2 any, T3 any](g func(T1) T2, f func(T2) T3) func(T1) T3 {
 		return f(g(x))
 	}
 }
+
+// Chain applies a series of functions to a value in sequence.
+// Each function must take a value of type T and return a value of type T.
+func Chain[T any](value T, functions ...func(T) T) T {
+	for _, fn := range functions {
+		value = fn(value)
+	}
+	return value
+}

@@ -1628,3 +1628,52 @@ func TestPipe2(t *testing.T) {
 		}
 	})
 }
+
+func TestChain(t *testing.T) {
+	// Example 1: Chaining integer functions
+	increment := func(x int) int { return x + 1 }
+	double := func(x int) int { return x * 2 }
+	subtractTwo := func(x int) int { return x - 2 }
+
+	t.Run("TestIntegerChain", func(t *testing.T) {
+		result := Chain(3, increment, double, subtractTwo)
+		expected := 6 // (((3 + 1) * 2) - 2) = 6
+		if result != expected {
+			t.Errorf("Chain(3, increment, double, subtractTwo) = %d; want %d", result, expected)
+		}
+	})
+
+	// Example 2: Chaining string functions
+	toUpper := func(s string) string { return strings.ToUpper(s) }
+	addExclamation := func(s string) string { return s + "!" }
+	trimSpace := func(s string) string { return strings.TrimSpace(s) }
+
+	t.Run("TestStringChain", func(t *testing.T) {
+		result := Chain(" hello ", trimSpace, toUpper, addExclamation)
+		expected := "HELLO!"
+		if result != expected {
+			t.Errorf(`Chain(" hello ", trimSpace, toUpper, addExclamation) = %s; want %s`, result, expected)
+		}
+	})
+
+	// Example 3: Chaining float functions
+	multiplyBy3 := func(x float64) float64 { return x * 3 }
+	addTen := func(x float64) float64 { return x + 10 }
+
+	t.Run("TestFloatChain", func(t *testing.T) {
+		result := Chain(2.5, multiplyBy3, addTen)
+		expected := 17.5 // (2.5 * 3) + 10 = 17.5
+		if result != expected {
+			t.Errorf("Chain(2.5, multiplyBy3, addTen) = %f; want %f", result, expected)
+		}
+	})
+
+	// Example 4: Chaining with no functions (should return input as-is)
+	t.Run("TestEmptyChain", func(t *testing.T) {
+		result := Chain(10)
+		expected := 10
+		if result != expected {
+			t.Errorf("Chain(10) = %d; want %d", result, expected)
+		}
+	})
+}
