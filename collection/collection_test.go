@@ -1764,3 +1764,92 @@ func TestMapFilter(t *testing.T) {
 		assert.Equal(t, expected, result, "they should be equal")
 	})
 }
+
+// Test cases for MapWithFilterWithError function
+func TestMapWithFilterWithError(t *testing.T) {
+
+	// Test case where both map and filter functions succeed
+	t.Run("Test with integers - successful map and filter", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) (int, error) { return n * 2, nil }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{2, 4, 6, 8, 10}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case where map function returns an error
+	t.Run("Test with map error", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) (int, error) {
+			if n == 3 {
+				return 0, errors.New("map error at 3")
+			}
+			return n * 2, nil
+		}
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		assert.Nil(t, result)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "map error at 3")
+	})
+
+	// Test case where the filter function removes all values
+	t.Run("Test with filter removing all elements", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) (int, error) { return n * 2, nil }
+		filterFn := func(n int) bool { return n > 10 } // All elements will be filtered out
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case where map function and filter function both succeed but some elements are filtered out
+	t.Run("Test with partial success", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) (int, error) { return n * 2, nil }
+		filterFn := func(n int) bool { return n > 6 } // Only numbers greater than 6 will be kept
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{8, 10} // Only 4*2 and 5*2 pass the filter
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case where input slice is empty
+	t.Run("Test with empty input", func(t *testing.T) {
+		// Arrange
+		nums := []int{}
+		mapFn := func(n int) (int, error) { return n * 2, nil }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+}

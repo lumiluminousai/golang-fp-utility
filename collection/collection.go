@@ -319,3 +319,23 @@ func MapFilter[T any](input []T, mapFn func(T) T, filterFn func(T) bool) []T {
 
 	return list
 }
+
+// MapFilterWithError applies a map function that may return an error, then filters the results.
+func MapFilterWithError[T any](input []T, mapFn func(T) (T, error), filterFn func(T) bool) ([]T, error) {
+	result := []T{}
+
+	for _, v := range input {
+		// Apply the map function and handle potential errors
+		mappedValue, err := mapFn(v)
+		if err != nil {
+			return nil, err // Return early on map error
+		}
+
+		// Apply the filter function
+		if filterFn(mappedValue) {
+			result = append(result, mappedValue)
+		}
+	}
+
+	return result, nil
+}
