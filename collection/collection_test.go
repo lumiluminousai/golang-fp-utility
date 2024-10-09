@@ -1677,3 +1677,397 @@ func TestChain(t *testing.T) {
 		}
 	})
 }
+
+func TestMapFilter(t *testing.T) {
+
+	t.Run("TestMapFilter with integers - doubling and filtering even numbers", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) int { return n * 2 }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result := MapFilter(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{2, 4, 6, 8, 10} // After mapping (doubling), all numbers are even, so all pass the filter
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+
+	t.Run("TestMapFilter with strings - filtering strings with '!' and converting to uppercase", func(t *testing.T) {
+		// Arrange
+		strs := []string{"hello", "world", "!"}
+		mapFn := func(s string) string { return s + "!" }
+		filterFn := func(s string) bool { return s != "!!" }
+
+		// Act
+		result := MapFilter(strs, mapFn, filterFn)
+
+		// Assert
+		expected := []string{"hello!", "world!"}
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+
+	t.Run("TestMapFilter with no elements matching filter", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 3, 5, 7}
+		mapFn := func(n int) int { return n * 2 }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result := MapFilter(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{2, 6, 10, 14} // All numbers are mapped (doubled), and no filtering is needed
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+
+	t.Run("TestMapFilter with empty input slice", func(t *testing.T) {
+		// Arrange
+		nums := []int{}
+		mapFn := func(n int) int { return n * 2 }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result := MapFilter(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{} // No elements to map or filter
+		assert.Equal(t, expected, result, "result should be an empty slice")
+	})
+
+	t.Run("TestMapFilter with strings - appending and filtering based on length", func(t *testing.T) {
+		// Arrange
+		strs := []string{"apple", "kiwi", "banana", "pear"}
+		mapFn := func(s string) string { return s + "!" }
+		filterFn := func(s string) bool { return len(s) > 5 }
+
+		// Act
+		result := MapFilter(strs, mapFn, filterFn)
+
+		// Assert
+		expected := []string{"apple!", "banana!"} // After appending "!", both "apple!" and "banana!" have length > 5
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+
+	t.Run("TestMapFilter with identity map and always true filter", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4}
+		mapFn := func(n int) int { return n }
+		filterFn := func(n int) bool { return true }
+
+		// Act
+		result := MapFilter(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{1, 2, 3, 4} // No transformation and all elements pass the filter
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+}
+
+// Test cases for MapWithFilterWithError function
+func TestMapWithFilterWithError(t *testing.T) {
+
+	// Test case where both map and filter functions succeed
+	t.Run("Test with integers - successful map and filter", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) (int, error) { return n * 2, nil }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{2, 4, 6, 8, 10}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case where map function returns an error
+	t.Run("Test with map error", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) (int, error) {
+			if n == 3 {
+				return 0, errors.New("map error at 3")
+			}
+			return n * 2, nil
+		}
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		assert.Nil(t, result)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "map error at 3")
+	})
+
+	// Test case where the filter function removes all values
+	t.Run("Test with filter removing all elements", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) (int, error) { return n * 2, nil }
+		filterFn := func(n int) bool { return n > 10 } // All elements will be filtered out
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case where map function and filter function both succeed but some elements are filtered out
+	t.Run("Test with partial success", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) (int, error) { return n * 2, nil }
+		filterFn := func(n int) bool { return n > 6 } // Only numbers greater than 6 will be kept
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{8, 10} // Only 4*2 and 5*2 pass the filter
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case where input slice is empty
+	t.Run("Test with empty input", func(t *testing.T) {
+		// Arrange
+		nums := []int{}
+		mapFn := func(n int) (int, error) { return n * 2, nil }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result, err := MapFilterWithError(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+}
+
+func TestMapFilterMap(t *testing.T) {
+	// Test case 1: Successful map and filter
+	t.Run("Test successful map and filter", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{
+			"apple":  2,
+			"banana": 3,
+			"cherry": 5,
+		}
+		mapFn := func(k string, v int) (string, int) {
+			return k, v * 2
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 5
+		}
+
+		// Act
+		result := MapFilterMap(input, mapFn, filterFn)
+
+		// Assert
+		expected := map[string]int{
+			"banana": 6,
+			"cherry": 10,
+		}
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case 2: Filter out all elements
+	t.Run("Test filter out all elements", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{
+			"apple":  2,
+			"banana": 4,
+			"cherry": 5,
+		}
+		mapFn := func(k string, v int) (string, int) {
+			return k, v * 2
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 10
+		}
+
+		// Act
+		result := MapFilterMap(input, mapFn, filterFn)
+
+		// Assert
+		expected := map[string]int{}
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case 3: Modify keys and values
+	t.Run("Test modify keys and values", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{
+			"apple":  2,
+			"banana": 3,
+		}
+		mapFn := func(k string, v int) (string, int) {
+			return k + "s", v + 1
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 3
+		}
+
+		// Act
+		result := MapFilterMap(input, mapFn, filterFn)
+
+		// Assert
+		expected := map[string]int{
+			"bananas": 4,
+		}
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case 4: Empty map input
+	t.Run("Test with empty input", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{}
+		mapFn := func(k string, v int) (string, int) {
+			return k, v * 2
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 5
+		}
+
+		// Act
+		result := MapFilterMap(input, mapFn, filterFn)
+
+		// Assert
+		expected := map[string]int{}
+		assert.Equal(t, expected, result)
+	})
+}
+
+func TestMapFilterMapWithError(t *testing.T) {
+	// Test case 1: Successful map and filter
+	t.Run("Test successful map and filter", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{
+			"apple":  2,
+			"banana": 3,
+			"cherry": 5,
+		}
+		mapFn := func(k string, v int) (string, int, error) {
+			return k, v * 2, nil
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 5
+		}
+
+		// Act
+		result, err := MapFilterMapWithError(input, mapFn, filterFn)
+
+		// Assert
+		expected := map[string]int{
+			"banana": 6,
+			"cherry": 10,
+		}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case 2: Error in map function
+	t.Run("Test error in map function", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{
+			"apple":  2,
+			"banana": 3,
+			"cherry": 5,
+		}
+		mapFn := func(k string, v int) (string, int, error) {
+			if k == "banana" {
+				return "", 0, errors.New("error in banana")
+			}
+			return k, v * 2, nil
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 5
+		}
+
+		// Act
+		result, err := MapFilterMapWithError(input, mapFn, filterFn)
+
+		// Assert
+		assert.Nil(t, result)
+		assert.EqualError(t, err, "error in banana")
+	})
+
+	// Test case 3: All elements filtered out
+	t.Run("Test filter out all elements", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{
+			"apple":  2,
+			"banana": 3,
+			"cherry": 5,
+		}
+		mapFn := func(k string, v int) (string, int, error) {
+			return k, v * 2, nil
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 10 // All elements will be filtered out
+		}
+
+		// Act
+		result, err := MapFilterMapWithError(input, mapFn, filterFn)
+
+		// Assert
+		expected := map[string]int{}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case 4: Modify keys and values, successful map and filter
+	t.Run("Test modify keys and values", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{
+			"apple":  2,
+			"banana": 3,
+		}
+		mapFn := func(k string, v int) (string, int, error) {
+			return k + "s", v + 1, nil
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 3
+		}
+
+		// Act
+		result, err := MapFilterMapWithError(input, mapFn, filterFn)
+
+		// Assert
+		expected := map[string]int{
+			"bananas": 4,
+		}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	// Test case 5: Empty input map
+	t.Run("Test with empty input", func(t *testing.T) {
+		// Arrange
+		input := map[string]int{}
+		mapFn := func(k string, v int) (string, int, error) {
+			return k, v * 2, nil
+		}
+		filterFn := func(k string, v int) bool {
+			return v > 5
+		}
+
+		// Act
+		result, err := MapFilterMapWithError(input, mapFn, filterFn)
+
+		// Assert
+		expected := map[string]int{}
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+}

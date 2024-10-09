@@ -304,3 +304,74 @@ func Chain[T any](value T, functions ...func(T) T) T {
 	}
 	return value
 }
+
+// MapFilter applies a map then filter function to a slice of any type
+func MapFilter[T any](input []T, mapFn func(T) T, filterFn func(T) bool) []T {
+	list := []T{}
+
+	for _, v := range input {
+		result := mapFn(v)
+
+		if filterFn(result) { // Filter first
+			list = append(list, result) // Then map
+		}
+	}
+
+	return list
+}
+
+// MapFilterWithError applies a map function that may return an error, then filters the results.
+func MapFilterWithError[T any](input []T, mapFn func(T) (T, error), filterFn func(T) bool) ([]T, error) {
+	result := []T{}
+
+	for _, v := range input {
+		// Apply the map function and handle potential errors
+		mappedValue, err := mapFn(v)
+		if err != nil {
+			return nil, err // Return early on map error
+		}
+
+		// Apply the filter function
+		if filterFn(mappedValue) {
+			result = append(result, mappedValue)
+		}
+	}
+
+	return result, nil
+}
+
+// MapFilterMap applies a map function and a filter function to a map (hash map).
+func MapFilterMap[K comparable, V any](input map[K]V, mapFn func(K, V) (K, V), filterFn func(K, V) bool) map[K]V {
+	result := make(map[K]V)
+
+	for k, v := range input {
+		mappedKey, mappedValue := mapFn(k, v)
+
+		// Apply the filter function to the mapped key and value
+		if filterFn(mappedKey, mappedValue) {
+			result[mappedKey] = mappedValue
+		}
+	}
+
+	return result
+}
+
+// MapFilterMapWithError applies a map function that may return an error, then filters the results.
+func MapFilterMapWithError[K comparable, V any](input map[K]V, mapFn func(K, V) (K, V, error), filterFn func(K, V) bool) (map[K]V, error) {
+	result := make(map[K]V)
+
+	for k, v := range input {
+		// Apply the map function and handle potential errors
+		mappedKey, mappedValue, err := mapFn(k, v)
+		if err != nil {
+			return nil, err // Return early on map error
+		}
+
+		// Apply the filter function to the mapped key and value
+		if filterFn(mappedKey, mappedValue) {
+			result[mappedKey] = mappedValue
+		}
+	}
+
+	return result, nil
+}
