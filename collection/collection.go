@@ -304,3 +304,18 @@ func Chain[T any](value T, functions ...func(T) T) T {
 	}
 	return value
 }
+
+// MapFilter applies a map then filter function to a slice of any type
+func MapFilter[T any](input []T, mapFn func(T) T, filterFn func(T) bool) []T {
+	list := []T{}
+
+	for _, v := range input {
+		result := mapFn(v)
+
+		if filterFn(result) { // Filter first
+			list = append(list, result) // Then map
+		}
+	}
+
+	return list
+}

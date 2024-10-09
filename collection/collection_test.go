@@ -1677,3 +1677,90 @@ func TestChain(t *testing.T) {
 		}
 	})
 }
+
+func TestMapFilter(t *testing.T) {
+
+	t.Run("TestMapFilter with integers - doubling and filtering even numbers", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4, 5}
+		mapFn := func(n int) int { return n * 2 }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result := MapFilter(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{2, 4, 6, 8, 10} // After mapping (doubling), all numbers are even, so all pass the filter
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+
+	t.Run("TestMapFilter with strings - filtering strings with '!' and converting to uppercase", func(t *testing.T) {
+		// Arrange
+		strs := []string{"hello", "world", "!"}
+		mapFn := func(s string) string { return s + "!" }
+		filterFn := func(s string) bool { return s != "!!" }
+
+		// Act
+		result := MapFilter(strs, mapFn, filterFn)
+
+		// Assert
+		expected := []string{"hello!", "world!"}
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+
+	t.Run("TestMapFilter with no elements matching filter", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 3, 5, 7}
+		mapFn := func(n int) int { return n * 2 }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result := MapFilter(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{2, 6, 10, 14} // All numbers are mapped (doubled), and no filtering is needed
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+
+	t.Run("TestMapFilter with empty input slice", func(t *testing.T) {
+		// Arrange
+		nums := []int{}
+		mapFn := func(n int) int { return n * 2 }
+		filterFn := func(n int) bool { return n%2 == 0 }
+
+		// Act
+		result := MapFilter(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{} // No elements to map or filter
+		assert.Equal(t, expected, result, "result should be an empty slice")
+	})
+
+	t.Run("TestMapFilter with strings - appending and filtering based on length", func(t *testing.T) {
+		// Arrange
+		strs := []string{"apple", "kiwi", "banana", "pear"}
+		mapFn := func(s string) string { return s + "!" }
+		filterFn := func(s string) bool { return len(s) > 5 }
+
+		// Act
+		result := MapFilter(strs, mapFn, filterFn)
+
+		// Assert
+		expected := []string{"apple!", "banana!"} // After appending "!", both "apple!" and "banana!" have length > 5
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+
+	t.Run("TestMapFilter with identity map and always true filter", func(t *testing.T) {
+		// Arrange
+		nums := []int{1, 2, 3, 4}
+		mapFn := func(n int) int { return n }
+		filterFn := func(n int) bool { return true }
+
+		// Act
+		result := MapFilter(nums, mapFn, filterFn)
+
+		// Assert
+		expected := []int{1, 2, 3, 4} // No transformation and all elements pass the filter
+		assert.Equal(t, expected, result, "they should be equal")
+	})
+}
